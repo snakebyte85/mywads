@@ -1,0 +1,68 @@
+===========================================================================
+Title                   : myfirst.wad
+Date Finished           : 2025/03/28
+Author                  : snakebyte
+Email Address           : snakebyte8@gmail.com
+Other Files By Author   :
+Misc. Author Info       : 
+
+Description             : 
+
+Additional Credits to   : 
+===========================================================================
+* Type of DOOM or DOOM II file*
+
+(Choose One)
+New level WAD           : Yes
+Sound PWAD Only         : No
+Music PWAD Only         : No
+Graphic Addon Only      : No
+Dehack Patch Only       : No
+.LMP Only               : No
+Other                   : No
+Required To Have In Dir : doom.wad
+
+* Play Information *
+
+Episode and Level #     : E1M1
+Single Player           : Yes
+Cooperative 2-4 Player  : No
+Deathmatch 2-4 Player   : No
+Difficulty Settings     : Not implemented
+New Sounds              : No
+New Music               : No
+New Graphics            : No
+Demos Replaced          : None
+
+* Construction *
+
+Base                    : New level from scratch
+Build Time              :  
+Editor(s) used          : Eureka
+Known Bugs              : 
+May Not Run With...     :
+
+* Copyright / Permissions *
+
+Authors (MAY/may NOT) use this level as a base to build additional
+levels.  
+
+(One of the following)
+
+You MAY distribute this WAD, provided you include this file, with
+no modifications.  You may distribute this file in any electronic
+format (BBS, Diskette, CD, etc) as long as you include this file 
+intact.
+
+You MAY not distribute this WAD file in any format.
+
+You may do whatever you want with this file.
+
+
+* Where to get this WAD *
+
+FTP sites:
+
+BBS numbers:
+
+Other:
