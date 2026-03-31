@@ -1,0 +1,12 @@
+version "4.12"
+
+#include "vector/actor.zsc"
+#include "vector/event_handler.zsc"
+#include "vector/event_handler_init_player.zsc"
+#include "vector/menu.zsc"
+#include "vector/ui.zsc"
+#include "vector/weapon_upgrades.zsc"
+#include "vector/workshop_menu.zsc"
+#include "vector/workshop_upgrades.zsc"
+#include "vector/main_menu.zsc"
+

@@ -1,0 +1,191 @@
+
+
+extend class VectorEventHandler {
+
+  void initPlayer() {
+    let player = players[consolePlayer].mo
+
+    player.A_SetInventory("ChallengesUnlocked",0);
+
+    player.GiveInventory("WorkshopTierItem", 5);
+
+    // pistol upgrades
+    player.GiveInventory("AltFireCricketDoubleTap",1);
+    player.GiveInventory("AltFireCricketTripleTap",1);
+    player.GiveInventory("AltFireCricketZoom",1);
+    player.GiveInventory("UpgradeCricketExtendedMagazine",1);
+    player.GiveInventory("UpgradeCricketElephantRounds",1);
+    player.GiveInventory("UpgradeCricketKnockback",1);
+    player.GiveInventory("UpgradeCricketHairTrigger",1);
+    player.GiveInventory("UpgradeCricketHeadshotDamage",1);
+    player.GiveInventory("UpgradeCricketRecoil",1);
+    player.GiveInventory("UpgradeCricketImpact",1);
+    player.GiveInventory("UpgradeCricketSplashDamage",1);
+
+    //smg upgrades
+    player.GiveInventory("UpgradeSMGAmmo",1);
+    player.GiveInventory("UpgradeSMF1eloadSpeed",1);
+    player.GiveInventory("UpgradeSMGMelee",1);
+    player.GiveInventory("UpgradeSMGDamage",1);
+    player.GiveInventory("UpgradeSMGSpread",1);
+    player.GiveInventory("UpgradeSMGStock",1);
+    player.GiveInventory("UpgradeSMGMagnetic",1);
+    player.GiveInventory("UpgradeSmgStaticDischarge",1);
+    player.GiveInventory("UpgradeSMGMagazine",1);
+    player.GiveInventory("UpgradeSMGUnderVolt",1);
+    player.GiveInventory("AltFireSMGZoom",1);
+    player.GiveInventory("AltFireSMGControlledShots",1);
+    player.GiveInventory("AltFireSMGShockDart",1);
+    player.GiveInventory("AltFireSMGDualWield",1);
+
+    // shotgun
+    player.GiveInventory("AltFireShotgunSlugShell",1);
+    player.GiveInventory("altfireShotgunFlak",1);
+    player.GiveInventory("altfireShotgunDoubleBarrel",1);
+    player.GiveInventory("AltfireShotgunZoom",1);
+    player.GiveInventory("AltfireShotgunRecoil",1);
+    player.GiveInventory("UpgradeShotgunAmmo",1);
+    player.GiveInventory("UpgradeShotgunQuickSwap",1);
+    player.GiveInventory("UpgradeShotgunRecall",1);
+    player.GiveInventory("UpgradeShotgunMasterKey",1);
+    player.GiveInventory("UpgradeShotgunPumpSpeed",1);
+    player.GiveInventory("UpgradeShotgunBarrelChoke",1);
+    player.GiveInventory("UpgradeShotgunCrowdControl",1);
+    player.GiveInventory("UpgradeShotgunGore",1);
+    player.GiveInventory("UpgradeShotgunPellets",1);
+    player.GiveInventory("UpgradeShotgunGore",1);
+
+    // rifle
+    player.GiveInventory("UpgradeRifleAmmo",1);
+    player.GiveInventory("UpgradeRifleRecoil",1);
+    player.GiveInventory("UpgradeRifleFramework",1);
+    player.GiveInventory("UpogradeRifleSteadySupply",1);
+    player.GiveInventory("UpgradeRifleSpread",1);
+    player.GiveInventory("UpgradeRifleDamage",1);
+    player.GiveInventory("UpgradeRiflePressurePoint",1);
+    player.GiveInventory("UpgradeRifleRecoil2",1);
+    player.GiveInventory("UpgradeRifleMelee",1);
+    player.GiveInventory("AltFireRifleBurst",1);
+    player.GiveInventory("AltFireRifleBurstZoom",1);
+    player.GiveInventory("AltFireRifleZoom",1);
+    player.GiveInventory("AltFireRifleLauncher",1);
+    //player.GiveInventory("AltFireScarabMode",1);
+
+    // Grenade Launcher
+    player.GiveInventory("AltfireGrenadeLauncherTraditional",1);
+    player.GiveInventory("AltfireGrenadeLauncherRocket",1);
+    player.GiveInventory("AltfireGrenadeLauncherProximity",1);
+//    player.GiveInventory("AltfireGrenadeLauncherTeddy11",1);
+    player.GiveInventory("UpgradeGrenadeLauncherIncreasedRadius",1);
+    player.GiveInventory("UpgradeGrenadeLauncherReducedFuse",1);
+    player.GiveInventory("UpgradeGrenadeLauncherSpeedloader",1);
+    player.GiveInventory("UpgradeGrenadeLauncherSelfDamage",1);
+    player.GiveInventory("UpgradeGrenadeLauncherScavenger",1);
+    player.GiveInventory("UpgradeGrenadeLauncherPanicButton",1);
+
+    // Penetrator
+    player.GiveInventory("UpgradeSpikeradius",1);
+    player.GiveInventory("UpgradeNailgunFireNails",1);
+    player.GiveInventory("UpgradeNailgunROF",1);
+    player.GiveInventory("UpgradeNailgunMelee",1);
+    player.GiveInventory("UpgradeNailgunStabilizer",1);
+    player.GiveInventory("UpgradeNailgunTwinBarrel",1);
+    player.GiveInventory("UpgradeNailgunShrapnel",1);
+    player.GiveInventory("UpgradeNailgunExpandedAmmo",1);
+    player.GiveInventory("AltfireNailZoom",1);
+    player.GiveInventory("AltfireNailBomb",1);
+    player.GiveInventory("AltfireNailTurret",1);
+    player.GiveInventory("AltfireNailShotgun",1);
+
+    // Plasma Rifle
+    player.GiveInventory("AltFirePlasmaRifleGravityManipulatorTraditional",1);
+    player.GiveInventory("AltFirePlasmaRifleGravityManipulatorRange",1);
+    player.GiveInventory("AltFirePlasmaRifleGravityManipulatorForce",1);
+//    player.GiveInventory("AltFirePlasmaRifleGravityManipulatorExplode",1);
+    player.GiveInventory("UpgradePlasmaRifleOvercharge",1);
+    player.GiveInventory("UpgradePlasmaRifleOverheat",1);
+    player.GiveInventory("UpgradePlasmaRifleOverclock",1);
+    player.GiveInventory("UpgradePlasmaRifleOverBlown",1);
+    player.GiveInventory("UpgradePlasmaRifleOvervoltage",1);
+    player.GiveInventory("UpgradePlasmaRifleOvercapacity",1);
+    player.GiveInventory("UpgradePlasmaRifleOverkill",1);
+
+    // Sniper rifle
+    player.GiveInventory("UpgradeDMRZoom",1);
+    player.GiveInventory("UpgradeDMRSpread",1);
+    player.GiveInventory("UpgradeDMRSilencer",1);
+    player.GiveInventory("UpgradeDMRExtendedMagazine",1);
+    player.GiveInventory("UpgradeDMRBipod",1);
+    player.GiveInventory("UpgradeDMRHeadshot",1);
+    player.GiveInventory("UpgradeDMRHairTrigger",1);
+    player.GiveInventory("AltfireDMRZoomTraditional",1);
+    player.GiveInventory("AltfireDMRZoomCharger",1);
+    player.GiveInventory("AltfireDMRZoomConcussive",1);
+
+    //nades and mines
+    player.GiveInventory("UpgradeGrenadeRadius",1); 
+    player.GiveInventory("UpgradeGrenadeDamage",1); 
+    player.GiveInventory("UpgradeGrenadeSelfDamage",1); 
+    player.GiveInventory("AltFireGrenadeTraditional",1); 
+    player.GiveInventory("AltFireGrenadeImpact",1); 
+    player.GiveInventory("AltFireGrenadeSticky",1); 
+    //player.GiveInventory("AltFireGrenadeBalloon",1); 
+    player.GiveInventory("UpgradeGrenadeStealth",1);
+
+    player.GiveInventory("UpgradeMineDamage",1); 
+    player.GiveInventory("UpgradeMineExtractor",1); 
+    player.GiveInventory("UpgradeMineRadius",1); 
+    player.GiveInventory("UpgradeMineFaceHopper",1); 
+    player.GiveInventory("AltFireMineTraditional",1); 
+    player.GiveInventory("AltFireMineSecondCharge",1); 
+    player.GiveInventory("AltFireMineShock",1); 
+    player.GiveInventory("AltFireMineAnnihilation",1); 
+    
+  }
+
+  void resetPlayer() {
+
+    let player = players[consolePlayer].mo;
+
+    player.A_SetInventory("WeaponParts", 3);
+    player.A_SetInventory("CreditsCount", 500);
+
+    player.health = 100;
+    PlayerPawn(players[consolePlayer].mo).maxHealth=100;
+
+    Player.A_SetInventory("SelacoArmor", 0);
+
+    player.A_SetInventory("RoaringCricket",1);
+    player.A_SetInventory("SMG", 0);
+    player.A_SetInventory("Rifle", 1);
+    player.A_SetInventory("Shot_Gun",0);
+    player.A_SetInventory("GrenadeLauncher", 0);
+    player.A_SetInventory("NAILGUN",0);
+    player.A_SetInventory("PLASMARIFLE",0);
+    player.A_SetInventory("Rail_Gun", 0);
+    player.A_SetInventory("DMR", 0);
+
+    player.A_SetInventory("PistolReserve", 30);
+    player.A_SetInventory("RifleReserve", 300);
+    player.A_SetInventory("ShotgunReserve", 0);
+    player.A_SetInventory("GLFragReserve", 0);
+    player.A_SetInventory("GLIceReserve", 0);
+    player.A_SetInventory("GLAcidReserve", 0);
+    player.A_SetInventory("NailgunReserve", 0);
+    player.A_SetInventory("PlasmaReserve", 0);
+    player.A_SetInventory("Railgunammo", 0);
+    player.A_SetInventory("MarksmanRifleReserve", 0);
+    player.A_SetInventory("HandGrenadeAmmo",0); 
+    player.A_SetInventory("IceGrenadeAmmo",0);
+    player.A_SetInventory("MineAmmo",0);
+
+    // disable all upgrades
+    for(int i=0; i<AllActorClasses.size(); i++) {
+      let upg = AllActorClasses[i];
+      if(upg is "WeaponUpgrade" && !(upg is "WeaponAltFire") && !upg.IsAbstract()) {
+        WeaponUpgrade.SetUpgradeEnabled(upg.getClassName(), consoleplayer, false);
+      }
+    }
+  }
+
+}      

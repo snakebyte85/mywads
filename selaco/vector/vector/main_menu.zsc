@@ -1,0 +1,18 @@
+class MyMasterMenu : MasterMenu {
+
+      override UIView createItemView(ListMenuItem i) {
+
+        string target="";
+        if(i is "ListMenuItemTextButton") {
+          let i = ListMenuItemTextButton(i);
+          target=i.target;
+        }
+
+        // hack to disable Save game menu in my map
+        if(Level.levelNum == 1000 && target == "SaveSelacoMenu") {
+           return null;
+        }
+
+        return super.createItemView(i);
+      }     
+}

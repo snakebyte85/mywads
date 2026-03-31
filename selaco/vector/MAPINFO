@@ -1,0 +1,33 @@
+gameinfo {
+         AddEventHandlers = "VectorStaticEventHandler"
+}        
+
+map SNA_SAND "Vector Sandbox" {
+	invasiontier = 0
+        areaNum = 29
+	skyfog = 255
+	outsidefogdensity = 255
+	LevelNum  = 1000
+	sky1 = "LEGACY"
+        EventHandlers = "VectorEventHandler","DebugEventHandler"
+        clipmidtextures
+        NoInfighting
+        ForgetState
+        FallingDamage
+        cvar = "g_autosaves", "0"
+}
+
+
+DoomEdNums {
+    30000=VectorPlayerRespawn
+    //30001=
+    30002=VectorPlayerRespawnForPrize
+    30003=VectorPrizeRespawn
+    30004=VectorWorkshopRespawn
+
+    30010=VectorHealthPrize
+    30011=VectorArmorPrize
+    30012=VectorSuperArmorPrize
+    30013=VectorAmmoPrize
+    30014=VectorWorkshop
+}

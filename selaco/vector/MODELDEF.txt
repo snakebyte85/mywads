@@ -1,0 +1,234 @@
+Model VectorWorkshop
+{
+   noperpixellighting  
+   Path "MD/ITEMCHEST"
+   SKIN 0 "ItemChest.png" 
+   MODEL 0 "ItemChest.md3" 
+   Scale 0.7 0.7 0.7
+   AngleOffset -90
+   FrameIndex VOXE L 0 0 
+}
+
+Model VectorHealthPrize
+{
+   noperpixellighting  
+   Path "MD/HealingItems"   
+   Model 0 "Portablemedkit.md3"    
+   Skin 0 "Portablemedkit.png"
+   scale 0.7 0.7 0.7
+   FrameIndex VOXE L 0 0
+}
+
+Model VectorSuperHealthPrize
+{
+   noperpixellighting  
+   Path "MD/HEALINGITEMS"   
+   Model 0 "ULTRAHEALTH.md3"    
+   Skin 0 "ULTRAHEALTH.png"
+   FrameIndex VOXE L 0 0
+   scale 1.15 1.15 1.15
+}
+
+Model VectorHealthUpgradePrize
+{
+   noperpixellighting  
+   Path "MD/Stimpack"   
+   Model 0 "STIMPACK.md3"   
+   Skin 0 "STIMPACK.png"
+   Scale 0.7 0.7 0.7  
+   FrameIndex VOXE L 0 0
+}
+
+Model VectorArmorPrize 
+{
+   NoPerPixelLighting
+   Path "MD/Armors"   
+   Model 0 "BASEARMOR.md3"    
+   Skin 0 "PURPLEARMOR.png"
+   Scale 1 1 1
+   FrameIndex VOXE L 0 0
+}
+
+Model VectorLightArmorPrize 
+{
+   NoPerPixelLighting
+   Path "MD/Armors"   
+   Model 0 "BASEARMOR.md3"    
+   Skin 0 "GREENARMOR.png"
+   Scale 1 1 1
+   FrameIndex VOXE L 0 0
+}
+
+Model VectorSuperArmorPrize
+{
+   NoPerPixelLighting
+   Path "MD/Armors"   
+   Model 0 "BASEARMOR.md3"    
+   Skin 0 "ORANGEARMOR.png"
+   Scale 1 1 1
+   FrameIndex VOXE L 0 0
+}
+
+Model VectorAmmoPrizeSub1
+{
+   noperpixellighting 
+   Path "MD/clip"
+   Model 0 "CLIPBIG.md3"    
+   Skin 0 "CLIPBIG.png"
+   Scale 0.4 0.4 0.4    
+   offset 15 0 0
+   FrameIndex VOXE L 0 0
+}
+
+Model VectorAmmoPrizeSub2
+{
+   noperpixellighting 
+   Path "MD/Cricket"
+   Model 0 "CRICKET_AMMO_Large.md3"    
+   Skin 0 "CRICKET_AMMO_Large.png"
+   Scale 0.4 0.4 0.4    
+   offset -15 0 0
+   FrameIndex VOXE L 0 0
+}
+
+Model VectorAmmoPrizeSub3 
+{
+ noperpixellighting  Path "MD/SHELLS"   
+   Model 0 "SHELLMEDIUM.md3"    
+   Skin 0 "SHELLMEDIUM.png"
+   Scale 0.4 0.4 0.4
+   FrameIndex VOXE L 0 0
+}
+
+Model VectorGrenadesPrizeSub1
+{
+   noperpixellighting  
+   Path "MD/Grenade"   
+   Model 0 "grenade_pickup.md3"    
+   Skin 0 "grenade_pickup.png"
+   Scale 0.4 0.4 0.4 
+   offset -15 0 0          
+   FrameIndex VOXE L 0 0
+}
+
+Model VectorGrenadesPrizeSub2
+{
+   noperpixellighting  
+   Path "MD/Grenade"   
+   Model 0 "grenade_pickup_ice.obj"    
+   Skin 0 "grenade_pickup_ice.png"
+   Scale 0.4 0.4 0.4       
+   offset 15 0 0   
+   FrameIndex VOXE L 0 0
+}
+
+Model VectorGrenadesPrizeSub3
+{
+   noperpixellighting  Path "MD\Mine"   
+   Model 0 "MINEPICKUPSMALL.md3"    
+   Skin 0 "MINEPICKUPSMALL.png"
+   Scale 0.4 0.4 0.4           
+   FrameIndex VOXE L 0 0
+}
+
+model VectorSMGPrize {
+ noperpixellighting  UseActorPitch
+   USEACTORROLL
+   offset 0 0 1
+   Path "MD/SMG"
+   SKIN 0 "SMG.png" 
+   MODEL 0 "SMG.md3" 
+   Scale 0.4 0.4 0.4
+   FrameIndex VOXE L 0 0   
+}
+
+model VectorShotgunPrize {
+   noperpixellighting 
+   offset 0 0 0
+   useactorroll
+   UseActorPitch
+   Path "MD/SHOTGUN"
+   SKIN 0 "SHOTGUN.png" 
+   MODEL 0 "SHOTGUN.md3" 
+   Scale 0.4 0.4 0.4
+   FrameIndex VOXE L 0 0   
+}
+
+model VectorShotgunPrize {
+   noperpixellighting 
+   offset 0 0 0
+   useactorroll
+   UseActorPitch
+   Path "MD/SHOTGUN"
+   SKIN 0 "SHOTGUN.png" 
+   MODEL 0 "SHOTGUN.md3" 
+   Scale 0.4 0.4 0.4
+   FrameIndex VOXE L 0 0   
+}
+
+model VectorGrenadeLauncherPrize {
+   noperpixellighting 
+   USEACTORROLL
+   useactorpitch
+   Path "MD/GrenadeLauncher"
+   SKIN 0 "GRENADELAUNCHER.png" 
+   MODEL 0 "GRENADELAUNCHER.md3" 
+   Scale 0.4 0.4 0.4
+   FrameIndex VOXE L 0 0   
+}
+
+Model VectorNailgunPrize
+{
+   UseActorPitch
+   UseActorRoll
+   noperpixellighting  
+   Path "MD/Nailgun"
+   SKIN 0 "NAILGUN.png" 
+   MODEL 0 "NAILGUN.md3" 
+   Scale 0.7 0.7 0.7
+   FrameIndex VOXE L 0 0 
+}
+
+Model VectorPLASMARIFLEPrize
+{
+   UseActorPitch
+   UseActorRoll
+   noperpixellighting  
+   Path "MD/plasmarifle"
+   SKIN 0 "PLASMARIFLE.png" 
+   MODEL 0 "PLASMARIFLE.md3" 
+   Scale 0.4 0.4 0.4
+   FrameIndex VOXE L  0 0 
+}
+
+Model VectorDMRPrize {
+   UseActorPitch
+   UseActorRoll
+   noperpixellighting  
+   Path "MD/DMR"
+   SKIN 0 "MARKSMAN_RIFLE.png" 
+   MODEL 0 "MARKSMAN_RIFLE.md3" 
+   Scale 0.45 0.45 0.45
+   Offset 0 0 10
+   FrameIndex VOXE L  0 0 
+}
+
+Model VectorWeaponPartsPrize
+{
+   noperpixellighting  
+   Path "MD/WEAPONPART"
+   SKIN 0 "weaponupgrade2.png" 
+   MODEL 0 "weaponupgrade2.md3" 
+   Scale 0.65 0.65 0.65
+   FrameIndex VOXE L 0 0 
+}
+
+Model VectorMoneyPrize 
+{
+   noperpixellighting
+   Path "MD/creditsbag"   
+   Model 0 "creditsbag.md3"    
+   Skin 0 "creditsbag.png"
+   Scale 0.8 0.8 0.8
+   FrameIndex VOXE L 0 0
+}

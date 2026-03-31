@@ -1,0 +1,504 @@
+Class AttachedActor: Actor {
+
+  Default {
+    Radius 0;
+    Height 0;
+    +NOGRAVITY;
+    +NOBLOCKMAP;
+    +NOTELEPORT;
+  }
+  Actor attachedActor;
+
+  override void tick() {
+    if(attachedActor) {
+      SetOrigin(attachedActor.pos, false);
+      angle=attachedActor.angle;
+    } else{
+      destroy();
+    }
+  }
+
+  states{
+  Spawn:
+    VOXE L 0;
+    loop;
+  }
+}
+
+Class VectorPoint : Actor{
+  Default {
+    Radius 0;
+    Height 0;
+    +NOGRAVITY;
+    +NOBLOCKMAP;
+    +NOTELEPORT;
+  }
+}
+
+Class VectorPlayerRespawn : VectorPoint {
+    //$Title Vector Player Respawn
+    //$Category Vector
+    //$Sprite 1COND0
+}
+
+Class VectorPlayerRespawnForPrize : VectorPoint {
+    //$Title Vector Player Respawn For Prize
+    //$Category Vector
+    //$Sprite 1COND0
+}
+
+Class VectorPrizeRespawn : VectorPoint {
+    //$Title Vector Prize Respawn
+    //$Category Vector
+    //$Sprite 1COND0
+}
+
+Class VectorWorkshopRespawn : VectorPoint {
+    //$Title Vector Workshop Respawn
+    //$Category Vector
+    //$Sprite 1COND0
+}
+
+Class VectorWorkshop : Interactable {
+
+  actor lid;
+  float safeAreaRadius;
+  property SafeAreaRadius: safeArearadius;
+
+  Default {
+    scale 1.0;
+    radius 50;
+    +USESPECIAL;
+    +DONTTHRUST ;    
+    activation THINGSPEC_SWITCH;
+    +NOGRAVITY;
+    Tag "$VECTOR_WORKSHOP";
+    VectorWorkshop.SafeareaRadius 500;
+  }
+
+  override void PostBeginPlay() {
+    bool success;
+    [success,lid] = A_SPAWNITEMEX("ChestlidActor", flags:SXF_SETMASTER);
+    lid.A_WARP(AAPTR_MASTER, -17, 0, 23, -90, WARPF_INTERPOLATE | WARPF_COPYPITCH | WARPF_NOCHECKPOSITION );
+    for(int x=0;x<360;x+=4) {
+      actor safearea;
+      bool succ;
+      [succ, safearea] = A_SPAWNITEMEX("VectorSafeArea", safeAreaRadius, 0, 2, angle:x, flags:SXF_SETMASTER);
+      if(safearea) {
+          VectorSafeArea(safearea).master = self;
+          safearea.SetOrigin((safearea.pos.xy, safearea.floorz), false);
+        }
+    }
+
+  }
+
+  void Delete() {
+    lid.destroy();
+    destroy();
+  }
+
+  override void deactivate(actor deactivator) {
+    activate(deactivator);
+  }
+
+  override void activate(actor activator) {
+    VectorEventHandler.Instance().showVectorWorkshopMenu();
+  }
+
+}
+
+class VectorSafeArea : actor {
+
+  actor master;
+
+    default {
+        +FLATSPRITE;
+        +NOGRAVITY;
+        +NOBLOCKMAP;
+        radius 5;
+        scale 0.2;
+        Alpha 0.25;
+    }
+
+    override void tick() {
+      super.tick();
+
+      if(!master) {
+          destroy();
+      }
+    }
+    States {
+        Spawn: 
+            EXPR B 1 BRIGHT;
+            loop;
+    }
+}
+
+Class VectorPrize: SelacoItem abstract {
+
+  int tier;
+  string category;
+  bool isperk;
+  int perkduration;
+
+  property tier: tier;
+  property category: category;
+  property isperk: isperk;
+  property perkduration: perkduration;
+
+  Default {
+    tag "this should not appear!";
+    scale 1.0;
+    radius 25;
+    VectorPrize.tier 1;
+    VectorPrize.category "misc";
+    VectorPrize.isPerk false;
+    VectorPrize.perkDuration -1;
+  }
+
+  // No pickup via touch
+  override bool CanPickup(Actor toucher) {
+    return toucher is 'PlayerPawn' && !pickupIsTouchBased;
+  }
+
+  // rotating
+  override void tick() {
+    A_SETANGLE(angle+3);
+  }
+
+  states {
+  Spawn:
+    VOXE L -1;
+    loop;
+  Pickup:
+    TNT1 A 1{
+      invoker.destroy();
+    }
+    goto pickupsuccess;
+  }
+}
+
+Class VectorHealthPrize: VectorPrize {
+
+  default {
+    tag "$VECTOR_PRIZE_HEALTH";
+    Inventory.Pickupsound "pickup/medkit";
+    VectorPrize.tier 1;
+    VectorPrize.category "powerup";
+  }
+
+  override void DoPickupSpecial(Actor toucher) {
+    toucher.A_SetHealth(toucher.GetMaxHealth());
+    if(toucher is 'Dawn' && Random(1,100) <= 25) {
+      Dawn dawn = dawn(toucher);
+      dawn.HealTick(5);
+      dawn.doHealthRelief();
+    }
+  }
+
+  override bool CanPickup(Actor toucher) {
+    return toucher.health < toucher.GetMaxHealth() && super.CanPickup(toucher);
+  }
+}
+
+Class VectorSuperHealthPrize: VectorPrize {
+
+  default {
+    tag "$VECTOR_PRIZE_SUPER_HEALTH";
+    Inventory.Pickupsound "pickup/medkit";
+    VectorPrize.tier 2;
+    VectorPrize.category "powerup";
+  }
+
+  override void DoPickupSpecial(Actor toucher) {
+    toucher.A_SetHealth(toucher.GetMaxHealth()+100);
+    if(toucher is 'Dawn' && Random(1,100) <= 70) {
+      Dawn dawn = dawn(toucher);
+      dawn.HealTick(5);
+      dawn.doHealthRelief();
+    }
+  }
+
+  override bool CanPickup(Actor toucher) {
+    return toucher.health < (toucher.GetMaxHealth()+100) && super.CanPickup(toucher);
+  }
+}
+
+Class VectorHealthUpgradePrize: VectorPrize {
+
+  default {
+    tag "$VECTOR_PRIZE_HEALTH_UPGRADE";
+    Inventory.Pickupsound "item/healpickup";
+    VectorPrize.tier 3;
+    VectorPrize.category "powerup";
+  }
+
+  override void DoPickupSpecial(Actor toucher) {
+    if(toucher.getMaxHealth() <= 200) {
+      PlayerPawn(toucher).maxhealth = toucher.getmaxHealth() + 25;
+    }
+    toucher.A_SetHealth(toucher.GetMaxHealth());
+    if(toucher is 'Dawn') {
+      Dawn dawn = dawn(toucher);
+      dawn.HealTick(5);
+      dawn.doHealthRelief();
+    }
+  }
+
+  override bool CanPickup(Actor toucher) {
+    return toucher.GetMaxHealth() <= 200 || toucher.health < toucher.GetMaxHealth() && super.CanPickup(toucher);
+  }
+}
+
+Class VectorArmorPrize: VectorPrize {
+
+  default {
+    tag "$VECTOR_PRIZE_ARMOR";
+    Inventory.PickupSound "ARMOR/PICKUP";
+    SelacoItem.pickupCount 100;
+    VectorPrize.tier 2;
+    VectorPrize.category "powerup";
+  }
+
+  override void DoPickupSpecial(Actor toucher) {
+    toucher.A_SetInventory("SelacoArmor", pickupCount);
+  }
+
+  override bool CanPickup(Actor toucher) {
+    return toucher.countinv("SelacoArmor") < pickupCount && super.CanPickup(toucher);
+  }
+}
+
+Class VectorLightArmorPrize: VectorArmorPrize {
+
+  default {
+    tag "$VECTOR_PRIZE_LIGHT_ARMOR";
+    SelacoItem.pickupCount 50;
+    VectorPrize.tier 1;
+    VectorPrize.category "powerup";
+  }
+}
+
+
+Class VectorSuperArmorPrize: VectorArmorPrize {
+
+  default {
+    tag "$VECTOR_PRIZE_SUPER_ARMOR";
+    SelacoItem.pickupCount 200;
+    VectorPrize.tier 3;
+    VectorPrize.category "powerup";
+  }
+}
+
+
+Class VectorGrenadesPrize: VectorPrize {
+
+  default {
+    tag "$VECTOR_PRIZE_GRENADES";
+    Inventory.PickupSound "GRNPIN";
+    VectorPrize.tier 1;
+    VectorPrize.category "powerup";
+  }
+
+  override void PostBeginPlay() {
+    super.PostBeginPlay();
+
+    AttachedActor sub;
+    for(int i=0;i<3;i++) {
+      sub = AttachedActor(Actor.spawn("VectorGrenadesPrizeSub"..string.format("%i",i+1), self.pos));
+      sub.attachedActor=self;
+    }
+  }
+
+  override void DoPickupSpecial(Actor toucher) {
+    let player = players[consolePlayer].mo;
+    player.GiveInventory("HandGrenadeAmmo", 1);
+    player.GiveInventory("IceGrenadeAmmo", 1);
+    player.GiveInventory("MineAmmo", 1);     
+  }
+
+  override bool CanPickup(Actor toucher) {
+    Inventory frags = toucher.FindInventory("HandGrenadeAmmo");
+    Inventory iceFrags = toucher.FindInventory("IceGrenadeAmmo");
+    Inventory mines = toucher.FindInventory("MineAmmo");
+
+    return !(frags && frags.Amount >= frags.maxAmount && iceFrags && iceFrags.Amount >= iceFrags.MaxAmount && mines && mines.Amount >= mines.maxAmount) && super.CanPickup(toucher);
+  }
+
+  states {
+  Spawn:
+    TNT1 A -1;
+    loop;
+  }
+}
+
+Class VectorGrenadesPrizeSub1 : AttachedActor{ }
+
+Class VectorGrenadesPrizeSub2 : AttachedActor{ }
+
+Class VectorGrenadesPrizeSub3 : AttachedActor{ }
+
+
+Class VectorAmmoPrizeSub1 : AttachedActor{ }
+
+Class VectorAmmoPrizeSub2 : AttachedActor{ }
+
+Class VectorAmmoPrizeSub3 : AttachedActor{ }
+
+Class VectorAmmoPrize: VectorPrize {
+
+  default {
+    tag "$VECTOR_PRIZE_AMMO";
+    Inventory.PickupSound "ARMOR/PICKUP";
+    VectorPrize.tier 1;
+    VectorPrize.category "weapon";
+  }
+
+  override void PostBeginPlay() {
+    super.PostBeginPlay();
+
+    AttachedActor sub;
+    for(int i=0;i<3;i++) {
+      sub = AttachedActor(Actor.spawn("VectorAmmoPrizeSub"..string.format("%i",i+1), self.pos));
+      sub.attachedActor=self;
+    }
+  }
+
+  override void DoPickupSpecial(Actor toucher) {
+    let player = players[consolePlayer].mo;
+
+    if(player.countInv("RoaringCricket")>0) {
+      player.GiveInventory("PistolReserve", Inventory(GetDefaultByType("PistolReserve")).MaxAmount/2);
+    }
+
+    if(player.countInv("SMG")>0 || player.countInv("Rifle")>0) {
+      player.GiveInventory("RifleReserve", Inventory(GetDefaultByType("RifleReserve")).MaxAmount/2);
+    }
+        
+    if(player.countInv("Shot_gun")>0) {
+      player.GiveInventory("ShotgunReserve", Inventory(GetDefaultByType("ShotgunReserve")).MaxAmount/2);
+    }
+
+    if(player.countInv("GrenadeLauncher")>0) {
+      player.GiveInventory("GLFragReserve",2);
+      player.GiveInventory("GLIceReserve",2);
+      player.GiveInventory("GLAcidReserve",2);
+    }
+        
+    if(player.countInv("Nailgun")>0) {
+      player.GiveInventory("NailgunReserve", Inventory(GetDefaultByType("NailgunReserve")).MaxAmount/2);
+    }
+
+    if(player.countInv("PlasmaRifle")>0) {
+      player.GiveInventory("PlasmaReserve", Inventory(GetDefaultByType("PlasmaReserve")).MaxAmount/2);
+    }
+
+    if(player.countInv("DMR")>0) {
+      player.GiveInventory("MarksmanRifleReserve", Inventory(GetDefaultByType("MarksmanRifleReserve")).MaxAmount/2);
+    }
+
+  }
+
+  states {
+  Spawn:
+    TNT1 A -1;
+    loop;
+  }
+}
+
+Class VectorWeaponPrize: VectorPrize abstract {
+
+  default {
+    //SelacoItem.pickupType "RoaringCricket";
+    //tag "$WEAPON_ROARINGCRICKET";
+    Inventory.PickupSound "ITEM/WPNFINDOLD";
+    VectorPrize.tier 1;
+    VectorPrize.category "weapon";
+  }
+
+  override void DoPickupSpecial(Actor toucher) {
+    toucher.GiveInventory(pickupType, 1);
+  }
+
+  override bool CanPickup(Actor toucher) {
+    return toucher.countinv(pickupType) == 0 && super.CanPickup(toucher);
+  }
+}
+
+Class VectorSMGPrize : VectorWeaponPrize {
+  default {
+    SelacoItem.pickupType "SMG";
+    tag "$WEAPON_SMG";
+    VectorPrize.tier 1;
+  }
+}
+
+Class VectorShotgunPrize : VectorWeaponPrize {
+  default {
+    SelacoItem.pickupType "Shot_gun";
+    tag "$WEAPON_SHOTGUN";
+    VectorPrize.tier 1;
+  }
+}
+
+Class VectorGrenadeLauncherPrize : VectorWeaponPrize {
+  default {
+    SelacoItem.pickupType "GrenadeLauncher";
+    tag "$WEAPON_GRENADELAUNCHER";
+    VectorPrize.tier 2;
+  }
+}
+
+Class VectorNailgunPrize : VectorWeaponPrize {
+  default {
+    SelacoItem.pickupType "Nailgun";
+    tag "$WEAPON_NAILGUN";
+    VectorPrize.tier 2;
+  }
+}
+
+Class VectorPlasmaRiflePrize : VectorWeaponPrize {
+  default {
+    SelacoItem.pickupType "PLASMARIFLE";
+    tag "$WEAPON_PLASMARIFLE";
+    VectorPrize.tier 2;
+  }
+}
+
+Class VectorDMRPrize : VectorWeaponPrize {
+  default {
+    SelacoItem.pickupType "DMR";
+    tag "$WEAPON_MARKSMANRIFLE";
+    VectorPrize.tier 2;
+  }
+}
+
+Class VectorWeaponPartsPrize: VectorPrize {
+
+  default {
+    tag "$VECTOR_PRIZE_WEAPON_PARTS";
+    Inventory.PickupSound "item/weaponpart";
+    VectorPrize.tier 1;
+    VectorPrize.category "weapon";
+    SelacoItem.pickupCount 5;
+  }
+
+  override void DoPickupSpecial(Actor toucher) {
+    toucher.GiveInventory("WeaponParts", pickupCount);
+  }
+}
+
+Class VectorMoneyPrize: VectorPrize {
+
+  default {
+    tag "$VECTOR_PRIZE_MONEY";
+    Inventory.PickupSound "item/creditsb";
+    VectorPrize.tier 1;
+    VectorPrize.category "weapon";
+    SelacoItem.pickupCount 500;
+  }
+
+  override void DoPickupSpecial(Actor toucher) {
+    toucher.GiveInventory("CreditsCount", pickupCount);
+  }
+}

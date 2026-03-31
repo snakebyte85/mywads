@@ -1,0 +1,34 @@
+[enu default]
+
+VECTOR_MSG_START_WAVE="\c[RED]FIGHT!!!";
+VECTOR_MSG_DEAD="\c[RED]You have %s remaining lives!";
+VECTOR_MSG_DEAD_ONLY_1_LIFE="\c[RED]You have only one life!";
+VECTOR_MSG_GAME_OVER="\c[RED]GAME OVER!";
+VECTOR_MSG_INVASION_TIER="\c[RED]Enemies are stronger! Invasion tier level %s!";
+VECTOR_MSG_WAVE="WAVE %s";
+VECTOR_MSG_END_WAVE="\c[RED]ENEMIES DEFEATED!";
+
+VECTOR_WORKSHOP="Customize your weapons";
+
+VECTOR_PRIZE_HEALTH="Full health";
+VECTOR_PRIZE_SUPER_HEALTH="Full health (max+100)";
+VECTOR_PRIZE_HEALTH_UPGRADE="Heal and more max health";
+VECTOR_PRIZE_ARMOR="Armor";
+VECTOR_PRIZE_LIGHT_ARMOR="Light Armor";
+VECTOR_PRIZE_SUPER_ARMOR="Super Armor";
+VECTOR_PRIZE_AMMO="Refill 50% Ammo";
+VECTOR_PRIZE_GRENADES="Grenades and mine";
+VECTOR_PRIZE_LIFE="1UP";
+VECTOR_PRIZE_WEAPON_PARTS="Weapon parts";
+VECTOR_PRIZE_MONEY="Money";
+
+DENIEDSAVE_VECTOR="Save is disabled in Vector mode";
+
+// PDA Entry 0-61
+PDA_G_0_61   = "3";
+PDA_N_0_61   = "Test";
+PDA_N2_0_61  = "Test";
+PDA_S_0_61   = "Test";
+PDA_D_0_61   = "19/08/2255";
+PDA_PI_0_61  = "PORTRA10";
+PDA_E_0_61   = "\c[PDASUB1]To:\c- Dawn Collins\n\c[PDASUB1]From:\c- Maurice Bhandi\n\c[PDASUB1]Subject:\c- Earth Exodus Mission!\n\nHello!!!!";

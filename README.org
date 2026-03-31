@@ -1,0 +1,18 @@
+* TASK
+
+- Rework select the correct number of enemies depending on the wave
+- Rework enemies (generate them in cluster, less variety)
+- Boss waves (for now only juggernaut)
+- After dead, clear target for enemies so they don't know where player is when spawned
+- After dead, spawn player far and not in sight (if possible)
+- Rip part of an official map and use that for tests (Probably one of the parking garages)
+- Generate random hazards
+- Clear room (dead corpses, holes etc...) after gameover
+- Create perks as prizes (temporary and infinite)
+- Create more prizes
+- Remove prize from list when got one time and can't get them again (weapons)
+- Score system
+
+
+* BUG
+

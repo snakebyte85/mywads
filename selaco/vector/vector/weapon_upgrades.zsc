@@ -1,0 +1,11 @@
+class VectorWeaponUpgrades {
+      
+  static clearscope int getUpgradeCost(string weaponUpgrade) {
+      int cost = WeaponUpgrade(players[consoleplayer].mo.FindInventory(weaponUpgrade)).cost/100;
+      if(cost<=0) {
+        cost=1;
+      }
+      return cost;
+  }
+
+}

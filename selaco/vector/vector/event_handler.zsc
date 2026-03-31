@@ -1,0 +1,770 @@
+class DebugEventHandler: EventHandler {
+
+  override void worldTick() {
+    /*if(Level.mapTime % (TICRATE*1) == 0) {           
+      ActorIterator it = Level.CreateActorIterator(10, "PathNode");
+      let act = it.next();
+      if(act) {
+        bool sight=players[consoleplayer].mo.CheckSight(act, SF_SEEPASTBLOCKEVERYTHING | SF_SEEPASTSHOOTABLELINES | SF_IGNOREVISIBILITY);
+        Console.printf("SIGHT IS %i",sight);
+      }
+    }*/    
+  }
+}
+class VectorStaticEventHandler : StaticEventHandler {
+
+  override void NetworkProcess(ConsoleEvent e) {
+
+    // Autosave
+    if(e.name == "quicksavevector") {
+
+      let d = Dawn(players[0].mo);
+
+      if(d && Level.levelNum == 1000) {
+        d.denySave("$DENIEDSAVE_VECTOR", true);
+        return;
+      }
+      
+      EventHandler.SendNetworkEvent("quicksaveselaco");
+      
+      return;
+    }
+  }
+}
+
+
+enum VectorState {
+  NOT_RUNNING,
+  COUNT_DOWN_TO_NEXT_WAVE,
+  RUNNING,
+  END_WAVE,
+  WORKSHOP_PRIZE_PAUSE,
+  DEAD,
+  COUNT_DOWN_TO_RESPAWN,
+  GAME_OVER
+}
+
+class VectorEnemyClass {
+  string name;
+  int chance;
+
+  static VectorEnemyClass create(string name, int chance) {
+    let val=new("VectorEnemyClass");
+    val.name=name;
+    val.chance=chance;
+    return val;
+  }
+
+}
+
+class VectorPrizeCategory {
+  string category;
+  array<class<actor> > prizes;
+}
+
+class VectorEventHandler : EventHandler {
+
+  const COUNT_DOWN_TIMER = TICRATE*4;
+  const MINIMUM_DISTANCE_FROM_PLAYER = 500.0;
+  const RANDOM_ALERT_CHANCE=40;
+
+  const MIN_ENEMIES_PER_WAVE=3;
+  const MAX_ENEMIES_PER_WAVE=10;
+
+  //[tier][soldier class]
+  array<VectorEnemyClass> ENEMY_TIERS[3];
+
+  int deathCountdown;
+  int invincibleCountdown;
+  int countDown;
+
+  int maxLives;
+  int currentLives;
+  int currentWave;
+  
+  array<Actor> enemies;
+  array<VectorPoint> playerRespawns;
+  VectorPoint playerRespawnForPrize;
+  array<VectorPoint> prizeRespawns;
+  VectorPoint workshopRespawn;
+  array<Actor> enemyRespawns;
+  VectorWorkshop workshop;
+  array<VectorPrize> prizes;
+  array<VectorPrizeCategory > prizeClassesTier[3];
+
+  // TODO use these for detonate bomb mode
+  int useBarStartTime;
+  int useBarDuration;
+
+  VectorState vstate;
+  VectorState nextState;
+  int timerNextNetworkEvent;
+  string nextNetworkEvent;
+
+  static VectorEventHandler Instance() {
+        return VectorEventHandler(EventHandler.Find("VectorEventHandler"));
+  }
+
+  ui static VectorEventHandler InstanceUI() {
+        return VectorEventHandler(EventHandler.Find("VectorEventHandler"));
+  }
+
+  // LevelEventHandler order is 0, so I just run this eventhandler right after the Selaco one
+  override void OnRegister() {
+    SetOrder(1);
+  }
+
+  static void showVectorMenu() {
+    Menu.setMenu("VectorMenu");
+  } 	
+
+  static void showVectorWorkshopMenu() {
+    Menu.setMenu("VectorWorkshopMenu");
+  } 	
+
+  static void startVectorGameFromACS() {
+    VectorEventHandler.Instance().startVectorNextWave();
+  }
+
+  void initEnemyTiers() {
+
+    int tier;
+    // 1 tier
+    tier=0;
+    ENEMY_TIERS[tier].push(VectorEnemyClass.create("SOLDIER", 45));
+    ENEMY_TIERS[tier].push(VectorEnemyClass.create("ENGINEER", 20));
+    ENEMY_TIERS[tier].push(VectorEnemyClass.create("CRAWLERMINE", 20));
+    ENEMY_TIERS[tier].push(VectorEnemyClass.create("SAWDRONE", 10));
+    ENEMY_TIERS[tier].push(VectorEnemyClass.create("SOLDIER_SQUADLEADER", 5));
+
+    // 2 tier
+    tier=1;
+    ENEMY_TIERS[tier].push(VectorEnemyClass.create("SOLDIER_SQUADLEADER", 10));
+    ENEMY_TIERS[tier].push(VectorEnemyClass.create("SOLDIER", 20));
+    ENEMY_TIERS[tier].push(VectorEnemyClass.create("ENGINEER", 20));
+    ENEMY_TIERS[tier].push(VectorEnemyClass.create("GUNNER", 20));
+    ENEMY_TIERS[tier].push(VectorEnemyClass.create("SIEGER", 5));
+    ENEMY_TIERS[tier].push(VectorEnemyClass.create("CRAWLERMINEQUEEN", 5));
+    ENEMY_TIERS[tier].push(VectorEnemyClass.create("CRAWLERMINE", 10));
+    ENEMY_TIERS[tier].push(VectorEnemyClass.create("SAWDRONE", 10));
+
+    // 3 tier
+    tier=2;
+    ENEMY_TIERS[tier].push(VectorEnemyClass.create("SOLDIER_SQUADLEADER", 10));
+    ENEMY_TIERS[tier].push(VectorEnemyClass.create("ENFORCER", 20));
+    ENEMY_TIERS[tier].push(VectorEnemyClass.create("PLASMATROOPER", 20));
+    ENEMY_TIERS[tier].push(VectorEnemyClass.create("ENGINEER", 10));
+    ENEMY_TIERS[tier].push(VectorEnemyClass.create("GUNNER", 10));
+    ENEMY_TIERS[tier].push(VectorEnemyClass.create("SIEGER", 15));
+    ENEMY_TIERS[tier].push(VectorEnemyClass.create("CRAWLERMINEQUEEN", 5));
+    ENEMY_TIERS[tier].push(VectorEnemyClass.create("AIRDRONE", 10));
+
+  }
+
+  void initPrizeClassesTiers() {
+    //registering all prizes
+    for(int i=0; i<AllActorClasses.size(); i++) {
+      let act = AllActorClasses[i];
+      if(act is "VectorPrize" && !act.IsAbstract()) {
+        Console.Printf("Registering prize class %s", act.GetClassName());
+        int tier = VectorPrize(GetDefaultbyType(act)).tier-1;
+        string category = VectorPrize(GetDefaultbyType(act)).category;
+        VectorPrizeCategory item;
+        for(int j=0; j<prizeClassesTier[tier].size(); j++) {
+          if(prizeClassesTier[tier][j].category == category) {
+            item=prizeClassesTier[tier][j];
+            break;
+          }
+        }
+        if(!item) {
+          item=new("VectorPrizeCategory");
+          item.category=category;
+          prizeClassesTier[tier].push(item);
+        }
+        item.prizes.push(act);
+      }
+    }
+  }
+
+  void resetInvasionTier() {
+    let tierItem = InvasionTierSystem.Instance().tierItem;
+    for(int x=tierItem.tiers.size()-1;x>0;x--) {
+      if(tierItem.tiers[x]) {
+          tierItem.tiers[x].unlocked=false;
+      }
+    }            
+  }
+
+  void clean() {
+    Actor act;
+    ThinkerIterator it = ThinkerIterator.Create("Selaco_Blood");
+    while(act = Actor(it.Next())) {
+      act.destroy();
+    }
+
+    it = ThinkerIterator.Create("Selaco_BloodSpot");
+    while(act = Actor(it.Next())) {
+      act.destroy();
+    }
+
+    it = ThinkerIterator.Create("GoreMaster");
+    while(act = Actor(it.Next())) {
+      act.destroy();
+    }
+
+    it = ThinkerIterator.Create("DecalLeader");
+    while(act = Actor(it.Next())) {
+      act.destroy();
+    }
+
+
+  }
+
+  override void WorldLoaded(WorldEvent e) {
+
+    console.printf("VECTOR EVENT HANDLER WORLD LOADED -> BEGIN");
+
+    initEnemyTiers();
+    initPrizeClassesTiers();    
+
+    deathCountdown = -1;
+
+    maxLives=3;
+    
+    vstate=NOT_RUNNING;
+
+    timerNextNetworkEvent=-1;
+
+    // add the pda entry that explains how V.E.C.T.O.R. works
+    PDAManager.AddEntry(players[consoleplayer].mo, 0, 61, true);
+
+    // registering all respawns
+    VectorPoint vp;
+    ThinkerIterator it = ThinkerIterator.Create("VectorPrizeRespawn");
+    while(vp = VectorPoint(it.Next())) {
+        prizeRespawns.Push(vp);      
+    }
+
+    it = ThinkerIterator.Create("PathNode");
+    Actor node;
+    while(node = Actor(it.Next())) {
+      enemyRespawns.Push(node);
+    }
+
+    it = ThinkerIterator.Create("VectorPlayerRespawnForPrize");
+    playerRespawnForPrize=VectorPoint(it.Next());
+
+    it = ThinkerIterator.Create("VectorWorkshopRespawn");
+    workshopRespawn=VectorPoint(it.Next());
+
+    workshop=VectorWorkshop(Actor.Spawn("VectorWorkshop", workshopRespawn.pos));
+
+    initPlayer();
+    resetPlayer();
+    it = ThinkerIterator.Create("VectorPlayerRespawn");    
+    while(vp = VectorPlayerRespawn(it.Next())) {
+      playerRespawns.Push(vp);
+    }
+    it = ThinkerIterator.Create("VectorPlayerRespawnForPrize");
+    playerRespawnForPrize=VectorPoint(it.Next());
+    respawnPlayer(playerRespawnForPrize);
+    
+    console.printf("VECTOR EVENT HANDLER WORLD LOADED -> END");
+  }
+
+  override void uiTick() {
+    if(countDown > 0 && !HUD.FindElement("HUDVectorCountDown")) {
+      HUD.AddElement("HUDVectorCountDown");
+    }
+
+    if(!HUD.FindElement("HUDVectorUseBar")) {
+      HUD.AddElement("HUDVectorUseBar");
+    }
+  }
+
+  override void worldTick() {
+
+    // Since an ACS script when a new map open, add the personal entries, I need this trick to remove those pda entries
+    if (Level.maptime < 5) {
+      PDAManager.RemoveEntry(players[consoleplayer].mo, 0, 1);
+      PDAManager.RemoveEntry(players[consoleplayer].mo, 0, 2);
+      PDAManager.RemoveEntry(players[consoleplayer].mo, 0, 3);
+      PDAManager.RemoveEntry(players[consoleplayer].mo, 0, 4);
+      PDAManager.RemoveEntry(players[consoleplayer].mo, 0, 5);
+    }
+
+    if(deathCountdown > 0 || (deathCountdown == 0 && players[consolePlayer].mo && players[consolePlayer].mo.health == 0)) {
+      if(Level.maptime >= players[consolePlayer].respawn_time && 
+         (
+          players[consolePlayer].cmd.buttons & BT_ATTACK      || 
+          players[consolePlayer].cmd.buttons & BT_ALTATTACK   || 
+          players[consolePlayer].cmd.buttons & BT_USE         ||
+          players[consolePlayer].cmd.buttons & BT_USER1       ||  
+          --deathCountdown == 0
+          )) {
+        deathCountdown  = -1;
+
+        if(vstate == DEAD) {
+          countDown = COUNT_DOWN_TIMER;
+          vstate=COUNT_DOWN_TO_RESPAWN;
+        } else if(vstate == GAME_OVER) {
+          // GAME OVER AFTER COUNT DOWN, RESET EVERYTHING
+          startVectorPrize(false);
+          resetPlayer();
+          resetInvasionTier();
+          clean();
+          for(int i=0; i<enemies.Size(); i++) {
+            if(enemies[i]){
+              enemies[i].destroy();
+            }
+          }
+          vstate=NOT_RUNNING;
+        }
+      }
+    }
+
+    // we are doing a countdown
+    if(countDown > 0 ) {
+      decrementCountDown();
+    }
+
+    // check enemies alive while wave is running
+    if(vstate==RUNNING) {
+      bool stillAlive=false;
+      for(int i=0; i<enemies.Size(); i++) {
+        if (enemies[i] && enemies[i].health>0) {
+          stillAlive=true;
+          break;
+        }
+      }
+      if(!stillAlive) {
+
+        // CHECK: enemies could have spawned other enemies, like turrets
+        let it = ThinkerIterator.Create("SelacoEnemy");
+        actor sentry;
+        bool stillEnemies=false;
+        while(sentry=Actor(it.next())) {
+          enemies.push(sentry);
+          stillEnemies=true;
+        }
+
+        if(!stillEnemies) {
+
+          vstate=END_WAVE;    
+          players[consoleplayer].mo.A_PLAYSOUND("announcer/waveC");
+          printMessage("$VECTOR_MSG_END_WAVE");
+          timerNextNetworkEvent=TICRATE*3;
+          nextNetworkEvent="startVectorPrize";
+        }
+      }
+    } else if(vstate==NOT_RUNNING || vstate==WORKSHOP_PRIZE_PAUSE) {      
+        
+      bool gotPrize=false;
+      for(int i=0; i<prizes.Size(); i++) {
+        if(!prizes[i]) {
+          gotPrize=true;
+          break;
+        }
+      }
+      if(gotPrize) {
+        for(int i=0; i<prizes.Size(); i++) {
+          if(prizes[i]) {
+            prizes[i].destroy();
+          }
+        }
+        prizes.clear();
+      }
+      if(workshop && players[consoleplayer].mo.distance2d(workshop) > workshop.safearearadius) {
+        startVectorNextWave();
+      }
+    }
+
+    if(timerNextNetworkEvent > 0) {
+      timerNextNetworkEvent--;
+    } else if(timerNextNetworkEvent == 0) {
+      timerNextNetworkEvent=-1;
+      if(nextNetworkEvent) {
+        EventHandler.SendNetworkEvent(nextNetworkEvent);
+      }
+    }
+
+    /* I keep this code commented for when I will build the detonate bomb mode
+    if ((vstate==NOT_RUNNING || vstate==END_WAVE) && (players[consolePlayer].cmd.buttons & BT_ALTATTACK)) {
+
+      if(useBarStartTime > 0 && Level.mapTime > useBarStartTime + useBarDuration) {
+        startVectorNextWave();
+      } else if(useBarStartTime <=0){
+        useBarStartTime = Level.mapTime;       
+        useBarDuration = TICRATE*2;
+      }
+    } else {
+      useBarStartTime=0;
+    }*/
+  }
+
+  override void NetworkProcess(ConsoleEvent e) {  
+
+    if(e.name.indexOf("VECTOR_ENABLE_UPGRADE:") == 0 ) {
+      // Take resources
+      let weaponUpgradeName = e.name.mid(22);
+      players[consoleplayer].mo.TakeInventory("weaponparts", VectorWeaponUpgrades.GetUpgradeCost(weaponUpgradeName));
+      WeaponUpgrade.SetUpgradeEnabled(weaponUpgradeName, e.player, true); 
+    } else if(e.name.indexOf("VECTOR_DISABLE_UPGRADE:") == 0 ) {
+      // Take resources
+      let weaponUpgradeName = e.name.mid(23);
+      players[consoleplayer].mo.GiveInventory("weaponparts", VectorWeaponUpgrades.GetUpgradeCost(weaponUpgradeName));
+      WeaponUpgrade.SetUpgradeEnabled(weaponUpgradeName, e.player, false); 
+    } else if(e.name == "startVectorPrize" ) {
+      startVectorPrize();
+    }
+  }
+
+  override void InterfaceProcess(ConsoleEvent e) {
+    if (!e.isManual && e.name == "disable_bloody_ui") {
+      let hud = HUD(StatusBar);
+      hud.overlay.drawers[HUDOverlay.OV_DEATH].SetAlpha(0);
+    }
+  }
+
+  void startVectorPrize(bool prize=true) {
+    vstate=WORKSHOP_PRIZE_PAUSE;
+    respawnPlayer(playerRespawnForPrize);    
+    workshop=VectorWorkshop(Actor.Spawn("VectorWorkshop", workshopRespawn.pos));
+    if(prize) {
+      if(Random(1,100) <= 30) {
+        Dawn d =Dawn(players[consoleplayer].mo);
+        d.dawnTalk("dawn/cabinet");
+      }
+      for(int i=0; i<prizeRespawns.size(); i++) {
+        int chance=Random(0,100);
+        int tier;
+        if(chance<70) {
+          tier=0;
+        } else if(chance<95) {
+          tier=1;
+        } else {
+          tier=2;
+        }
+        Console.printf("Trying to get prize with tier %i", tier);
+        // TODO for now categories have the same chance        
+        int size=prizeClassesTier[tier].size();        
+        int categoryIndex=Random(0,size-1);
+        int subSize=prizeClassesTier[tier][categoryIndex].prizes.size();
+        bool gotPrize=false;
+        int count=0;
+        while(!gotPrize) {
+          count++;
+          int prizeIndex=Random(0,subsize-1);
+          let prizeClass=VectorPrize(GetDefaultByType(prizeClassesTier[tier][categoryIndex].prizes[prizeIndex]));
+          Console.printf("Got prize class %s", prizeClass.getClassName());
+          if(count > 100 || prizeClass.CanPickUp(players[consoleplayer].mo)){
+            gotPrize=true;
+            for(int j=0;j<prizes.size();j++) {
+              if(prizes[j].GetClassName() == prizeClass.GetClassName()) {
+                gotPrize=false;
+                break;
+              }
+            }
+            if(count > 100 || gotPrize) {
+              gotPrize=true;
+              let prize=VectorPrize(Actor.Spawn(prizeClassesTier[tier][categoryIndex].prizes[prizeIndex], prizeRespawns[i].pos));
+              prizes.push(prize);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  void startVectorNextWave() {
+
+    if(vstate==NOT_RUNNING) {
+      currentLives=maxLives;
+      currentWave=0;
+    }
+
+    workshop.delete();
+    for(int i=0; i<prizes.Size(); i++) {
+      if(prizes[i]) {
+        prizes[i].destroy();
+      }
+    }
+    prizes.clear();
+
+    vstate=COUNT_DOWN_TO_NEXT_WAVE;
+
+    // move player to random respawn point
+    respawnPlayer(playerRespawns[Random(0,playerRespawns.Size()-1)]);
+    
+    // block player
+    Dawn(players[consoleplayer].mo).blockMovement=true;
+
+    countDown = COUNT_DOWN_TIMER;
+
+    currentWave++;
+
+    players[consoleplayer].mo.A_PLAYSOUND("announcer/prepare", CHAN_AUTO);
+    printMessage("$VECTOR_MSG_WAVE",string.format("%i", currentWave));
+
+    if(currentWave%5==0) {
+      InvasionTierSystem.Instance().setInvasionTier(InvasionTierSystem.Instance().getInvasionTierCount());
+      printMessage("$VECTOR_MSG_INVASION_TIER", string.format("%i",InvasionTierSystem.Instance().getInvasionTierCount()-1));
+    }
+  }
+
+  void respawnPlayer(VectorPoint respawn) {
+    // if player is dead, resurrection
+    let player = players[consolePlayer];
+    if(player.mo.health <= 0) {
+      player.mo.TakeInventory("PlayerIsDead", 1);
+      player.mo.friction = 0.1;
+      player.SetPSprite(PSP_OFFHAND, null );
+      player.resurrect();
+      // Disable that bloody UI
+      EventHandler.SendInterfaceEvent(consolePlayer, "disable_bloody_ui");
+    }
+
+    // move player to respawn point
+    player.mo.vel.x=0;player.mo.vel.y=0;player.mo.vel.z=0;
+    player.mo.SetOrigin(respawn.pos, false);
+    player.mo.angle = respawn.angle;
+    player.mo.pitch = 0;
+  }
+
+
+  void decrementCountDown() {
+    countDown--;
+
+    PlayerPawn pawn=players[consoleplayer].mo;
+
+    // BEEP...
+    if(countDown % TICRATE == 0 && countDown != 0) {
+        pawn.A_PLAYSOUND("SHOOTINGRANGE/COUNTDOWN", CHAN_AUTO, 0.3);
+    }
+		
+    // BEEEEEEEEEEEEEP !!!
+    if(countDown == 0) {
+        pawn.A_PLAYSOUND("SHOOTINGRANGE/START", CHAN_AUTO, 0.4);
+        Dawn d = Dawn(pawn);
+        d.blockMovement=false;
+        if(vstate==COUNT_DOWN_TO_NEXT_WAVE) {
+          spawnEnemies();
+          printMessage("$VECTOR_MSG_START_WAVE");
+          if(random(1,100) <=30) {
+            d.dawnTalk("DAWN/YOUGOTTHIS");
+          }
+        } else if (vstate==COUNT_DOWN_TO_RESPAWN) {          
+          respawnPlayer(playerRespawns[Random(0,playerRespawns.Size()-1)]);
+          if(random(1,100) <=30) {
+            d.dawnTalk("dawn/annoyed1");
+          }
+        }
+        vstate=RUNNING;
+    }
+  }
+
+  void spawnEnemies() {
+   
+    vstate=RUNNING;
+    enemies.clear();
+    array<Actor> enemyRespawnsWave;
+    enemyRespawnsWave.copy(enemyRespawns);
+
+    BattleOverseer overseer = BattleOverseer.Instance();
+    BattleSquad newSquad;
+
+    bool alert=Random(0,100)<=RANDOM_ALERT_CHANCE;
+
+    int tier;
+    if(currentWave < 10) {
+      tier=0;
+    } else if(currentWave < 20) {
+      tier=1;
+    } else if(currentWave < 30) {
+      tier=2;
+    } else {
+      tier=3;
+    }
+
+    // Getting the number of enemies, depending on the number of wave
+    // TODO this calculation is dumb
+    int min;
+    int max;
+    min=Random(MIN_ENEMIES_PER_WAVE, MIN_ENEMIES_PER_WAVE+ (10-(currentWave%10)));
+    max=Random(0, MAX_ENEMIES_PER_WAVE- (currentWave%10));
+    if(min > MAX_ENEMIES_PER_WAVE) {
+      min=MAX_ENEMIES_PER_WAVE;
+    }
+    if(max < MIN_ENEMIES_PER_WAVE) {
+      max=MIN_ENEMIES_PER_WAVE;
+    }
+    if(max < min) {
+      let val=max;
+      max=min;
+      min=val;
+    }
+    int enemiesCount=Random(min,max);
+    console.printf("Trying to spawn %i enemies", enemiesCount);
+    for(int i=0; i<enemiesCount; i++) {
+      let spawnNodeIndex = findEnemyRespawn(enemyRespawnsWave);
+      let enemyClass = findEnemyFromTier(tier);
+      console.printf("Trying to spawn %s enemy in node %i", enemyClass, spawnNodeIndex);
+      let enemy = Actor.Spawn( enemyClass, enemyRespawnsWave[spawnNodeIndex].pos);
+      enemy.angle=Random(0,360);
+      enemyRespawnsWave.Delete(spawnNodeIndex);
+      
+      enemies.push(enemy);
+
+      if(alert && enemy is "EnemySoldier") {
+        EnemySoldier es = EnemySoldier(enemy);
+        if(!newSquad) {
+          newSquad = overseer.createNewBattleSquad(es);
+          newSquad.squadStatus = SQUAD_PATROL;    //SQUAD_Patrol;  // Patrol currently has a bug where enemies reaching the goal will immediately target a pathnode and start shooting the player
+          newSquad.patrolStartTime = level.time;
+        } else {
+          overseer.assignSquad(es, newSquad);
+        }
+
+        // Set a home node for the soldier near the player and activate return-to-home
+/*        let ph = PathHandler.Instance();
+        if(ph.playerVisibleNodes.size() > 0) {
+          // Pick a random node for now
+          es.homeNode = ph.playerVisibleNodes[random(0, ph.playerVisibleNodes.size() - 1)];*/
+          es.lostPlayerGoPatrol();
+
+          if(es.squad && es.squad.members.size() && random(1, 1) == 1) {
+            es.squad.assignCalloutToSquadmate(SOLDIER_SEARCH, urgent:true, ignoreSizeRequirement:false, delayOffset:3);
+          }
+      
+      }
+    }
+  }
+
+  override void WorldThingDied(WorldEvent e) {
+    // TRICK: We need to destroy every credits bag that spawn after the dead of a squad leader
+    if(e.thing is "Soldier_SquadLeader") {
+      let it = ThinkerIterator.Create("CreditsbagSmall");
+      actor bag;
+      while(bag=Actor(it.next())) {
+        if(bag) {
+          bag.destroy();
+        }
+      }
+    }
+  }
+
+
+  override void PlayerDied(PlayerEvent e) {
+
+    if(e.PlayerNumber == consolePlayer) {
+
+      // TRICK: When player die, I need LevelEventHandler not to manage the death of the player and call the DeathMenu
+      if(deathCountdown < 0) {
+        LevelEventHandler.instance().deathCountdown = -1;
+        deathCountdown = TICRATE * 4;
+      }
+      currentLives--;
+      if(currentLives > 0) {
+        vstate=DEAD;
+        let msg = "$VECTOR_MSG_DEAD";
+        if(currentLives==1) {
+          msg = "$VECTOR_MSG_DEAD_ONLY_1_LIFE";
+        }
+        printMessage(msg,string.format("%i",currentLives));
+      } else {
+        vstate=GAME_OVER;
+        printMessage("$VECTOR_MSG_GAME_OVER");        
+      }
+    }
+  }
+
+  int findEnemyRespawn(array<Actor> enemyRespawnsWave) {
+    
+    bool checkDistance=true;
+    bool checkSight=true;
+    int count=0;
+    int respawnIndex;
+    let player = players[consolePlayer].mo;
+    Console.printf("Finding a good spot for enemy spawn");
+    while(true) {
+      count++;
+      Console.printf("%d iteration", count);
+      // after some iteration, I disable first the check distance, then the check sight
+      if(count % 100 == 0) {
+        if(checkDistance) {
+          Console.printf("Can't find a good spot, trying to disable check distance");
+          checkDistance=false;
+        } else if(checkSight){
+          Console.printf("Can't find a good spot, trying to disable check sight");
+          checkSight=false;
+        } else {
+          //WORST SCENARIO! Just pick the first one. It should not happens. This means the pathnodes are not good
+          Console.printf("WORST SCENARIO. Picking the first one");
+          respawnIndex = 0;
+          break;
+        }          
+      }
+
+      respawnIndex = Random(0,enemyRespawnsWave.Size()-1);
+
+      let respawn = enemyRespawnsWave[respawnIndex];
+
+      if(checkDistance && player.Distance2D(respawn) <= MINIMUM_DISTANCE_FROM_PLAYER) {
+        Console.printf("Not good. Too close to player");
+        continue;
+      }
+      
+      // I need to increase temporarily the height of the node, simulating the average height of an enemy. If I don't do that, "fences" can hide the nodes.
+      int oldHeight = respawn.height;
+      respawn.A_SetSize(-1, 120);
+
+      if(checkSight && player.CheckSight(respawn, SF_SEEPASTBLOCKEVERYTHING | SF_SEEPASTSHOOTABLELINES | SF_IGNOREVISIBILITY)) {
+        Console.printf("Not good. Player can see this spot");
+        respawn.A_SetSize(-1, oldHeight);
+        continue;
+      }
+      respawn.A_SetSize(-1, oldHeight);
+      break;
+    }
+
+    Console.printf("Found a good spot!");
+
+    return respawnIndex;
+
+  }
+
+  string findEnemyFromTier(int enemyTier) {
+
+    int result=Random(0,100);
+    int sum=0;
+    string enemyClass="";
+    for(int i=0; i<ENEMY_TIERS[enemyTier].Size(); i++) {
+      if(result <= ENEMY_TIERS[enemyTier][i].chance+sum) {
+        enemyClass=ENEMY_TIERS[enemyTier][i].name;
+        break;
+      } else {
+        sum+=ENEMY_TIERS[enemyTier][i].chance;
+      }
+    }
+
+    // if we got SOLDIER, randomize his role.
+    if(enemyClass == "SOLDIER") {
+      switch (Random(1,4)) {
+        case 1: enemyClass="SOLDIER_DEFENDER"; break;
+        case 2: enemyClass="SOLDIER_ATTACKER"; break;
+        case 3: enemyClass="SOLDIER_AGGRESSOR"; break;
+        case 4: enemyClass="SOLDIER_STRAFER"; break;
+      }
+    }
+
+    return enemyClass;
+  }
+
+  void printMessage(string message, string arg="") {
+    string localizedMessage = stringTable.localize(message);
+    PlayerPawn pawn=players[consolePlayer].mo;
+    let d = Dawn(pawn);   
+    d.A_PRINTBOLD(string.format(localizedMessage,arg));
+  }
+
+}
