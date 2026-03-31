@@ -1,0 +1,290 @@
+class HUDVectorCountDown : HUDElement {
+    VectorEventHandler vector;
+
+    uint countdownTime;
+    int countDown;
+    bool countdownStarted;
+
+    override int getOrder() {
+        return 20000;
+    }       
+
+    override HUDElement init() {
+        Super.init();
+        countdown = 0;
+        showWhenDead = true;
+
+        return self;
+    }
+
+
+    override void onAttached(HUD owner, Dawn player) {
+        Super.onAttached(owner, player);
+
+        if(!vector) vector = VectorEventHandler.InstanceUI();
+    }
+
+
+    override void onWeaponChanged(SelacoWeapon oldWeapon, SelacoWeapon newWeapon) {
+        Super.onWeaponChanged(oldWeapon, newWeapon);
+    }
+
+
+    override bool tick() {
+        // Update stats
+        if(vector) {
+            let lastCountdown = countDown;
+            countDown = (vector.countDown / TICRATE) + 1;
+            if(countdown != lastCountdown) {
+                countdownTime = ticks;
+                countdownStarted = true;
+            }
+
+            // We have fully counted down! 
+            if(countdown == 1 && ticks - lastCountdown >= TICRATE - 1) {
+                return true;
+            }
+        }
+
+        return Super.tick();
+    }
+
+
+    override void draw(double fracTic, float alpha, Vector2 shake, Vector2 momentum)  {
+
+        if(!vector) return;
+        
+        double time = (ticks + fracTic) * ITICKRATE;
+        Font titleFnt = "SEL52FONT";
+
+        // Draw countdown
+        if(countdown > 0 && countdown < 4) {
+            double time = (ticks - countdownTime + fracTic) * ITICKRATE;
+
+            if(time >= 0.16) {
+                double tm2 = clamp((time - 0.16) / 0.16, 0.0, 1.1);
+                double a2 = 1.0 - UIMath.EaseOutCubicf(tm2);
+                double scale2 = 2.0 + (UIMath.EaseOutCubicf(tm2) * 1.5);
+
+                if(tm2 <= 1.0) {
+                    DrawStr(
+                        titleFnt, 
+                        String.Format("%d", countdown), 
+                        (0, -300),
+                        DR_SCREEN_CENTER | DR_TEXT_CENTER, 
+                        Font.CR_UNTRANSLATED, 
+                        a2 * 0.5,
+                        false,
+                        scale: (scale2, scale2)
+                    );
+                }
+            }
+
+            double tm = clamp(time / 0.16, 0.0, 1.0);
+            double a = UIMath.EaseOutCubicf(tm);
+            double scale = 2.0 + ((1.0 - UIMath.EaseOutCubicf(tm)) * 3.5);
+
+            DrawStr(
+                titleFnt, 
+                String.Format("%d", countdown), 
+                (0, -300),
+                DR_SCREEN_CENTER | DR_TEXT_CENTER, 
+                Font.CR_UNTRANSLATED, 
+                a,
+                false,
+                scale: (scale, scale)
+            );
+        }
+    }
+}
+
+
+class HUDVectorUseBar : HUDElement {
+    VectorEventHandler vector;
+
+    PieDrawer useBar;
+
+    override HUDElement init() {
+        Super.init();
+
+        useBar = new("PieDrawer");
+        useBar.Init("RADIAL1");
+
+        return self;
+    }
+
+
+    override void onAttached(HUD owner, Dawn player) {
+        Super.onAttached(owner, player);
+
+        if(!vector) vector = VectorEventHandler.InstanceUI();
+    }
+
+    override void draw(double fracTic, float alpha, Vector2 shake, Vector2 momentum)  {
+
+        if(!vector) return;
+
+        if(vector.useBarStartTime > 0) {
+          float timePassed = Level.mapTime - vector.useBarStartTime;
+          useBar.degreesStart=0;
+          useBar.degreesEnd= timePassed * 360.0 / vector.useBarDuration;
+          useBar.Build();
+
+          Vector2 scScale = getVirtualScreenScale();
+          let size = (128 * scScale.x, 128 * scScale.y) * crosshairScale;
+          useBar.Draw((screenSize * 0.5) - (size * 0.5), size, 180, 1.0, Color(255,255,255,255));
+        }
+    }
+}
+
+
+class HUDVectorInfo : HUDElement {
+    VectorEventHandler vector;
+
+
+    override HUDElement init() {
+        Super.init();
+
+
+        return self;
+    }
+
+
+    override void onAttached(HUD owner, Dawn player) {
+        Super.onAttached(owner, player);
+
+        if(!vector) vector = VectorEventHandler.InstanceUI();
+    }
+
+    override void draw(double fracTic, float alpha, Vector2 shake, Vector2 momentum)  {
+
+        if(!vector) return;
+
+        Vector2 pos = (50, 80);
+
+        Font fnt = "PDA16FONT";
+        DrawImgAdvanced("PLYSA0", pos, 0, 1.0, (0.5,0.5));
+        pos=(70,60);
+        DrawStr(fnt, string.format("%i",vector.currentLives), pos, 0, Font.CR_UNTRANSLATED, alpha, false, scale: (1, 1));
+
+        pos=(20,100);
+
+        DrawStr(fnt, string.format("Wave %i",vector.currentWave), pos, 0, Font.CR_UNTRANSLATED, alpha, false, scale: (1, 1));
+
+        pos=(20,140);
+
+        if(vector.activePerks.size() >0) {
+
+          DrawStrCol(fnt, "Active perks:", pos, 0xFF000000);
+          
+          for(int i=0;i<vector.activePerks.size();i++) {
+            pos.y+=20;
+            string str=stringTable.localize(vector.activePerks[i].gettag());
+            if(vector.activePerks[i].wavesLeft>0) {
+              str=str..string.format(" (%i)",vector.activePerks[i].wavesLeft);
+            }
+            DrawStr(fnt, str, pos);
+          }
+        }
+
+    }
+}
+
+
+class HUDVectorPrizeDescription : HUDElement {
+    VectorEventHandler vector;
+
+    override HUDElement init() {
+        Super.init();
+        return self;
+    }
+
+    override void onAttached(HUD owner, Dawn player) {
+        Super.onAttached(owner, player);
+
+        if(!vector) vector = VectorEventHandler.InstanceUI();
+    }
+
+    override void draw(double fracTic, float alpha, Vector2 shake, Vector2 momentum)  {
+
+        let lastObject = LookAt.Instance().lastObject;
+        if(lastObject && lastObject is "VectorPrize" && VectorPrize(lastObject).description != "") {
+          printPrizeDescription(VectorPrize(lastObject));
+        }
+    }
+
+    const textScale =1.0;
+    const tutWidth = 580;
+    const textAreaTop = 36;
+    const textAreaLeft = 15;
+    const titleHeight = 34;
+
+    void printPrizeDescription(VectorPrize prize) {
+
+      Font fnt = "PDA16FONT";
+        
+      int fntHeight = fnt.getHeight() + 1;
+        
+      let backgroundImage = TexMan.CheckForTexture("PANTUT2", TexMan.Type_Any);
+      let bgSlices = NineSlice.Create("PANTUT2", (297, 38), (463, 93));
+
+      // Pre-calculate sizes and shit
+      // Calculate broken lines
+      let text = stringTable.localize(prize.description);
+
+      // Precalculate text sizes
+      let printLines = fnt.breakLines(text, (tutWidth - (15 * 2)) / textScale);
+
+      let fullTextHeight = fntHeight * textScale * (printlines ? printLines.count() : 1);
+      let textAreaHeight = fullTextHeight + 20;
+
+      let tutHeight = 35 + 8 + textAreaHeight + 2;
+
+      let drawShape = new("Shape2D");
+      bgSlices.buildShape(drawShape, (0,0), (tutWidth, tutHeight));
+      let shapeTransform = new("Shape2DTransform");
+
+      let scale = (1.0, 1.0);
+
+      int screenWidth = Screen.GetWidth();
+      int screenHeight = Screen.GetHeight();
+
+      Vector2 pos = (50, 300);
+
+      // Draw BG
+      let shapePos = pos;
+      adjustXY(shapePos.x, shapePos.y, 0);
+      let shapeScale = getVirtualScreenScale();//(virtualScreenSize.x / screenSize.x, virtualScreenSize.y / screenSize.y);
+      shapeTransform.Clear();
+      shapeTransform.Scale(shapeScale);
+      shapeTransform.Translate((shapePos.x * shapeScale.x, shapePos.y * shapeScale.y));
+      drawShape.SetTransform(shapeTransform);
+      Screen.drawShape(
+                       bgSlices.texture.texID,
+                       true,
+                       drawShape,
+                       DTA_Alpha , 1.0,
+                       DTA_Filtering, true
+                       );
+
+      let tScale = textScale * scale;
+
+      // Draw each line of text
+      float fullHeight = fntHeight * textScale * printLines.count();
+      float startY = (textAreaHeight / 2.0) - (fullHeight / 2.0);
+
+      for(int x = 0; x < printLines.count(); x++) {
+        string line = printLines.stringAt(x);
+        float y = ((fntHeight * textScale) * x) + startY;
+
+        DrawStr(fnt, line, pos + (textAreaLeft, textAreaTop + y), a: 1.0, monospace: false);
+      }
+
+      Font titleFnt = "SEL21FONT";
+      int offset = 15;
+      float y = (titleHeight / 2.0) - ((titleFnt.getHeight() * textScale) / 2.0);
+      
+      DrawStr(titleFnt, prize.getTag(), pos + (15, y),  a: 1, monospace: false);
+    }
+
+}

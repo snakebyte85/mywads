@@ -1,0 +1,48 @@
+[enu default]
+
+VECTOR_MSG_START_WAVE="\c[RED]FIGHT!!!";
+VECTOR_MSG_DEAD="\c[RED]You have %s remaining lives!";
+VECTOR_MSG_DEAD_ONLY_1_LIFE="\c[RED]You have only one life!";
+VECTOR_MSG_GAME_OVER="\c[RED]GAME OVER!";
+VECTOR_MSG_INVASION_TIER="\c[RED]Enemies are stronger! Invasion tier level %s!";
+VECTOR_MSG_WAVE="WAVE %s";
+VECTOR_MSG_END_WAVE="\c[RED]ENEMIES DEFEATED!";
+
+VECTOR_WORKSHOP="Customize your weapons";
+
+VECTOR_PRIZE_HEALTH="Full health";
+VECTOR_PRIZE_HEALTH_DESCRIPTION="Restore all your health to max";
+VECTOR_PRIZE_SUPER_HEALTH="Full health (max+100)";
+VECTOR_PRIZE_SUPER_HEALTH_DESCRIPTION="Restore all your health to max but also get 100 additionals health points";
+VECTOR_PRIZE_HEALTH_UPGRADE="Heal and more max health";
+VECTOR_PRIZE_HEALTH_UPGRADE_DESCRIPTION="Increase your max health by 25 and restore all your health. The max health is kept for all the game until you lose.";
+VECTOR_PRIZE_ARMOR="Armor";
+VECTOR_PRIZE_LIGHT_ARMOR="Light Armor";
+VECTOR_PRIZE_SUPER_ARMOR="Super Armor";
+VECTOR_PRIZE_AMMO="Refill 50% Ammo";
+VECTOR_PRIZE_AMMO_DESCRIPTION="Take 50% of your max capacity ammo for most of the weapons you have. If you have a grenade launcher, take 2 frag nades, 2 ice nades and 2 acid nades";
+VECTOR_PRIZE_GRENADES="Grenades and mine";
+VECTOR_PRIZE_GRENADES_DESCRIPTION="Take 2 frags, 1 ice nade and 1 mine";
+VECTOR_PRIZE_LIFE="1UP";
+VECTOR_PRIZE_LIFE_DESCRIPTION="One additional life. Lives are capped at 5";
+VECTOR_PRIZE_WEAPON_PARTS="Weapon parts";
+VECTOR_PRIZE_WEAPON_PARTS_DESCRIPTION="Use weapon parts to upgrade your weapons at the workshop chest";
+VECTOR_PRIZE_MONEY="Money";
+VECTOR_PRIZE_MONEY_DESCRIPTION="Use your money to by ammo";
+VECTOR_PRIZE_DOUBLE_DAMAGE="Double damage";
+VECTOR_PRIZE_DOUBLE_DAMAGE_DESCRIPTION="All your weapons (your fists too) deal double damage for just one wave";
+VECTOR_PRIZE_BUNNY_HOPPER="Bunny hopper";
+VECTOR_PRIZE_BUNNY_HOPPER_DESCRIPTION="You get the effect of the bunny hopper drink for 3 waves";
+VECTOR_PRIZE_RAILGUN="Railgun";
+VECTOR_PRIZE_RAILGUN_DESCRIPTION="What should I say? Just use it to kill those alien bastards! Unfortunately it lasts only for one wave!";
+
+DENIEDSAVE_VECTOR="Save is disabled in Vector mode";
+
+// PDA Entry 0-61
+PDA_G_0_61   = "3";
+PDA_N_0_61   = "Sal";
+PDA_N2_0_61  = "Barkeeper";
+PDA_S_0_61   = "Let me explain you VECTOR!!!";
+PDA_D_0_61   = "22/09/2255";
+PDA_PI_0_61  = "PORTRA10";
+PDA_E_0_61   = "\c[PDASUB1]To:\c- Dawn Collins\n\c[PDASUB1]From:\c- Sal\n\c[PDASUB1]Subject:\c- Let me explain you VECTOR!!!\n\nIt's been one month we are fighting these fucking aliens!\nWhile you were "playing around" with our little alien friends, I managed to create something that could be useful to you and our comrades... but specially to you! I called it V.E.C.T.O.R... Virtual Encounter Combat and Tactical Operations Recursion.\nWhat? It's not a stupid dumb name, I asked our AOS AI assistant to give me some name ideas and... yup, it's quite dumb.\n\nBy the way I see you are already inside! The chest in front of you is used to modify and upgrade your weapons using weapons parts or buy ammo with money. The weapons parts can be used to enable an upgrade or you can get the weapon parts back by disabling that upgrade, so you can constantly decide what weapon to power up based on your ammo or situation.\n\nWhen you cross the red circle around the chest, the game wil start! You will encounter random enemies each wave, and of course the number and power of your enemies will increase as you progress in the game, wave after wave. At the end of each wave, you can select a prize that can help you: it can be a weapon, a temporary ability, a powerup, or just some health, armor, money or weapon parts. You just need to be lucky, maybe a Railgun will appear!! Unfortunately you can use it only for one wave eheheh!\n\nHave fun and please! Do not crash VECTOR by gibbing too many enemies!";

@@ -1,0 +1,45 @@
+gameinfo {
+         AddEventHandlers = "VectorStaticEventHandler"
+}        
+
+map SNA_SAND "Vector Sandbox" {
+        areaNum = 29
+	skyfog = 255
+	outsidefogdensity = 255
+	LevelNum  = 1000
+	sky1 = "LEGACY"
+        EventHandlers = "VectorEventHandler"
+//        EventHandlers = "VectorEventHandler","DebugEventHandler"
+        clipmidtextures
+        NoInfighting
+        ForgetState
+        FallingDamage
+        //I am using this useless flag to properly manage disable save system
+        Map07Special
+}
+
+map SNA_PARK "Parking Garage" {
+        areaNum = 29
+	skyfog = 255
+	outsidefogdensity = 255
+	LevelNum  = 1001
+	sky1 = "LATENIGHT"
+	rainymap
+        EventHandlers = "VectorEventHandler"
+//        EventHandlers = "VectorEventHandler","DebugEventHandler"
+        clipmidtextures
+        NoInfighting
+        ForgetState
+        FallingDamage
+        //I am using this useless flag to properly manage disable save system
+        Map07Special
+}
+
+
+DoomEdNums {
+    30000=VectorPlayerRespawn
+
+    30002=VectorPlayerRespawnForPrize
+    30003=VectorPrizeRespawn
+    30004=VectorWorkshopRespawn
+}

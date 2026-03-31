@@ -1,0 +1,9 @@
+$random dawn/yougotthis {dawn/yougotthis1 dawn/yougotthis2 dawn/yougotthis3 dawn/yougotthis4 dawn/yougotthis5 dawn/yougotthis6 dawn/yougotthis7}
+
+dawn/yougotthis1	"SOUNDS/YOU/low_ammo/dawn_lowammo_4.ogg"
+dawn/yougotthis2	"SOUNDS/YOU/low_ammo/dawn_lowammo_5.ogg"
+dawn/yougotthis3        "SOUNDS/VO/DAWN_SIGH_2.ogg"
+dawn/yougotthis4        "sounds/vo/OM_02C/Dawn_02C_1.ogg"
+dawn/yougotthis5        "sounds/vo/OM_02C/Dawn_02C_2.ogg"
+dawn/yougotthis6        "sounds/vo/OM_02C/Dawn_02C_3.ogg"
+dawn/yougotthis7        "sounds/vo/OM_02C/Dawn_02C_4.ogg"

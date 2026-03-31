@@ -1,0 +1,10 @@
+* TASK
+
+- Rework enemies (generate them in cluster, less variety)
+- Boss waves (for now only juggernaut)
+- Generate random hazards
+- Create more prizes
+- Score system
+
+* BUG
+
